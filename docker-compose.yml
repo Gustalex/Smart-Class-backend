@@ -1,0 +1,18 @@
+services:
+  auth_service:
+    build: ./auth
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./auth:/app
+      - auth_db:/app/data
+    networks:
+      - my_network
+
+volumes:
+  auth_db:
+  payment_db:
+
+networks:
+  my_network:
+    driver: bridge
