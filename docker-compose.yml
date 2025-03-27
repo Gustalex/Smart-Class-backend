@@ -22,10 +22,23 @@ services:
       - auth_db:/app/data
     networks:
       - my-network
+  
+  lms-service:
+    build: ./lms
+    container_name: lms-service
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./lms:/app
+      - lms_db:/app/data
+    networks:
+      - my-network
+    depends_on:
+      - auth-service
 
 volumes:
   auth_db:
-  payment_db:
+  lms_db:
 
 networks:
   my-network:
