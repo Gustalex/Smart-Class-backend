@@ -6,6 +6,7 @@ from ..serializers import UserSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 User = get_user_model()
 
@@ -91,6 +92,7 @@ class RefreshView(generics.GenericAPIView):
 
 class VerifyRoleView(generics.GenericAPIView):
     authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         required_role = request.data.get('role')
@@ -103,9 +105,24 @@ class VerifyRoleView(generics.GenericAPIView):
 
         user = request.user
         
-        if (required_role == 'student' and not user.is_student) or \
-           (required_role == 'teacher' and not user.is_teacher) or \
-           (required_role == 'manager' and not user.is_manager):
+        has_access = False
+        
+        if required_role == 'student':
+            has_access = user.is_student or user.is_teacher or user.is_manager
+            
+        elif required_role == 'teacher':
+            has_access = user.is_teacher or user.is_manager
+            
+        elif required_role == 'manager':
+            has_access = user.is_manager
+            
+        else:
+            return Response(
+                {"detail": "Invalid role specified"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not has_access:
             return Response(
                 {"detail": f"You don't have {required_role} privileges"},
                 status=status.HTTP_403_FORBIDDEN
@@ -115,7 +132,17 @@ class VerifyRoleView(generics.GenericAPIView):
             {
                 "detail": "Permission granted",
                 "user_id": user.id,
-                "role": required_role
+                "require_role": required_role,
+                "actual_role": self._get_user_role(user)
             },
             status=status.HTTP_200_OK
         )
+    
+    def _get_user_role(self, user):
+        if user.is_manager:
+            return 'manager'
+        elif user.is_teacher:
+            return 'teacher'
+        elif user.is_student:
+            return 'student'
+        return 'unknown'

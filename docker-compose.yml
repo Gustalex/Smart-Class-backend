@@ -1,18 +1,32 @@
 services:
-  auth_service:
+
+  api-gateway:
+    build: ./gateway
+    container_name: api-gateway
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./gateway:/app
+    networks:
+      - my-network
+    depends_on:
+      - auth-service
+
+  auth-service:
     build: ./auth
+    container_name: auth-service
     ports:
       - "8000:8000"
     volumes:
       - ./auth:/app
       - auth_db:/app/data
     networks:
-      - my_network
+      - my-network
 
 volumes:
   auth_db:
   payment_db:
 
 networks:
-  my_network:
+  my-network:
     driver: bridge
