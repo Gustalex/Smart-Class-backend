@@ -5,13 +5,14 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
-RUN mkdir -p /app/data
-
+RUN mkdir -p /app/data \
+    && mkdir -p /app/media/atividades/conteudo \
+    && mkdir -p /app/media/aulas/conteudo \
+    && chmod -R 777 /app/media
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Runserver
 CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8001"]
