@@ -26,7 +26,13 @@ SECRET_KEY = 'django-insecure-d2*xs81kv9&kp7m$n^-li@gfgtg8ja(28v)x($@-ag82lr(=ur
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'lms-service',  
+    'lms_service', 
+    '.localhost',    
+]
 
 
 # Application definition
@@ -57,12 +63,17 @@ MIDDLEWARE = [
 
 SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': SECRET_KEY,  
+    'ALGORITHM': 'HS256',  
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'VERIFYING_KEY': SECRET_KEY,
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',  
+    'USER_ID_FIELD': 'id', 
+    'USER_ID_CLAIM': 'user_id', 
 }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'lms_service.authentication.GatewayJWTAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }

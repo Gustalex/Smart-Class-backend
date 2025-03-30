@@ -16,7 +16,7 @@ class Atividade(FactoryModel):
         return self.titulo
     
     class Meta:
-        db_name = 'atividade'
+        db_table = 'atividade'
         verbose_name = 'Atividade'
         verbose_name_plural = 'Atividades'
         ordering = ['data_entrega']

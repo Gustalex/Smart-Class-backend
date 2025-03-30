@@ -1,0 +1,1 @@
+LMS_SERVICE_URL = 'http://lms-service:8001'  # URL for the LMS service

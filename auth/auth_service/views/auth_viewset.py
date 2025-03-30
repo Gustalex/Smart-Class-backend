@@ -6,7 +6,8 @@ from ..serializers import UserSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 User = get_user_model()
 
@@ -63,7 +64,6 @@ class LoginView(generics.GenericAPIView):
        
 
 class LogoutView(generics.GenericAPIView):
-    authentication_classes = [JWTAuthentication]
 
     def get_serializer_class(self):
         return None
@@ -91,7 +91,6 @@ class RefreshView(generics.GenericAPIView):
 
 
 class VerifyRoleView(generics.GenericAPIView):
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -146,3 +145,41 @@ class VerifyRoleView(generics.GenericAPIView):
         elif user.is_student:
             return 'student'
         return 'unknown'
+
+class VerifyTokenView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token')
+        if not token:
+            auth_header = request.headers.get('Authorization')
+            if auth_header:
+                token = auth_header.split(' ')[-1]
+        
+        if not token:
+            return Response(
+                {"detail": "Token is required either in body (token) or header (Authorization)"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            access_token = AccessToken(token)
+            user_id = access_token['user_id']
+            user = User.objects.get(id=user_id)
+
+            return Response(
+                {
+                    "detail": "Token is valid",
+                    "user_id": user.id,
+                    "email": user.email,
+                    "is_student": user.is_student,
+                    "is_teacher": user.is_teacher,
+                    "is_manager": user.is_manager
+                },
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_401_UNAUTHORIZED
+            )

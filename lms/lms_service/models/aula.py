@@ -9,7 +9,7 @@ class Aula(FactoryModel):
     titulo = models.CharField(max_length=255)
     descricao = models.TextField()
     conteudo = models.FileField(upload_to = aula_upload_path)
-    atividade = models.ForeignKey('Atividade', related_name='aulas')
+    atividade = models.ForeignKey('Atividade', on_delete=models.DO_NOTHING, related_name='aulas', null=True, blank=True)
 
     def __str__(self):
         return self.titulo
