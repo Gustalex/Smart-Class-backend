@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.http import FileResponse
 import requests
 
 class MicroserviceRouter(APIView):
@@ -37,7 +38,7 @@ class MicroserviceRouter(APIView):
                     {'detail': 'Token inválido ou serviço indisponível'},
                     status=status.HTTP_401_UNAUTHORIZED
                 )
-            user_info = auth_response.json() 
+            user_info = auth_response.json()
 
         try:
             base_url = self.service_url.rstrip('/')
@@ -69,13 +70,27 @@ class MicroserviceRouter(APIView):
                 url=full_url,
                 headers=headers,
                 data=request.body,
-                timeout=5
+                timeout=30, 
+                stream=True
             )
 
-            return Response(
-                response.json() if response.content else {},
+            proxy_response = Response(
+                content_type=response.headers.get('Content-Type'),
                 status=response.status_code
             )
+
+            if 'application/json' not in response.headers.get('Content-Type', ''):
+                proxy_response = FileResponse(
+                    response.raw,
+                    content_type=response.headers.get('Content-Type'),
+                    status=response.status_code
+                )
+                if 'Content-Disposition' in response.headers:
+                    proxy_response['Content-Disposition'] = response.headers['Content-Disposition']
+                return proxy_response
+
+            proxy_response.data = response.json() if response.content else {}
+            return proxy_response
             
         except requests.exceptions.RequestException as e:
             return Response(

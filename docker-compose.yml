@@ -31,7 +31,7 @@ services:
     volumes:
       - ./lms:/app
       - lms_db:/app/data
-      - ./lms_service/media:/app/media
+      - ./lms_service/media:/app/media:rw,z
     networks:
       - my-network
     depends_on:
