@@ -49,6 +49,7 @@ class MicroserviceRouter(APIView):
             headers = {
                 'Content-Type': request.headers.get('Content-Type', 'application/json'),
                 'X-Forwarded-From-Gateway': 'true',
+                'Authorization': request.headers.get('Authorization', '')
             }
             
             if user_info:
@@ -59,9 +60,6 @@ class MicroserviceRouter(APIView):
                     'X-User-Is-Teacher': 'true' if user_info.get('is_teacher') else 'false',
                     'X-User-Is-Manager': 'true' if user_info.get('is_manager') else 'false',
                 })
-            
-            if 'Authorization' in request.headers:
-                headers['Authorization'] = request.headers['Authorization']
 
             print(f"Proxying to: {full_url}")
 

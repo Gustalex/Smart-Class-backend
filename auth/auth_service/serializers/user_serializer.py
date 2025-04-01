@@ -9,11 +9,12 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'name', 'cpf', 'email', 'role', 'curso', 'cursos', 'password',
+        fields = ('id', 'name', 'cpf', 'email', 'role', 'curso', 'cursos','turmas', 'password',
                  'is_student', 'is_teacher', 'is_manager', 'created_at', 'updated_at')
         extra_kwargs = {
             'cursos': {'required': False},
-            'curso': {'required': False, 'allow_null': True}
+            'curso': {'required': False, 'allow_null': True},
+            'turmas': {'required': False, 'allow_null': True},
         }
 
     def validate(self, data):
@@ -44,17 +45,26 @@ class UserSerializer(serializers.ModelSerializer):
 
         return data
 
+    def validate_turmas(self, value):
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise serializers.ValidationError("O campo turmas deve ser uma lista.")
+        return value
+
     def create(self, validated_data):
         password = validated_data.pop('password')
         role = validated_data.pop('role', None)
         curso = validated_data.pop('curso', None)
         cursos = validated_data.pop('cursos', [])
+        turmas = validated_data.pop('turmas', [])
 
         user = User.objects.create_user_entity(
             role=role,
             password=password,
             curso=curso,
             cursos=cursos,
+            turmas=turmas,
             **validated_data
         )
         return user
@@ -75,14 +85,17 @@ class UserSerializer(serializers.ModelSerializer):
                 instance.is_student = True
                 instance.curso = validated_data.get('curso', instance.curso)
                 instance.cursos = []
+                instance.turmas = validated_data.get('turmas', instance.turmas or [])
             elif role == 'teacher':
                 instance.is_teacher = True
                 instance.curso = None
                 instance.cursos = validated_data.get('cursos', instance.cursos or [])
+                instance.turmas = validated_data.get('turmas', instance.turmas or [])
             elif role == 'manager':
                 instance.is_manager = True
                 instance.curso = None
                 instance.cursos = []
+                
 
         if 'password' in validated_data:
             instance.set_password(validated_data['password'])

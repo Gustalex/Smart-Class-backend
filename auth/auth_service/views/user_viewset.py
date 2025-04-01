@@ -24,14 +24,24 @@ class UserViewSet(ViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=True, methods=['patch'])
+    @action(detail=True, methods=['patch'], url_path='update')
     def update_user(self, request, pk=None):
         try:
             user = User.objects.get(pk=pk)
+            
+            if 'turmas' in request.data:
+                current_turmas = user.turmas or []
+                new_turmas = request.data['turmas']
+                
+                user.turmas = list(set(current_turmas + new_turmas))
+                user.save()
+                return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+            
             serializer = UserSerializer(user, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+            
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:

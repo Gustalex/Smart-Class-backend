@@ -39,6 +39,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=255, blank=False, unique=True)
     curso = models.IntegerField(null=True, blank=True) # alunos só podem estar em um curso  
     cursos = models.JSONField(null=True, blank=True) # professores podem estar em vários cursos
+    turmas = models.JSONField(null=True, blank=True) # alunos e professores podem estar em varias turmas
     is_student = models.BooleanField(default=False)
     is_teacher = models.BooleanField(default=False)
     is_manager = models.BooleanField(default=False)
