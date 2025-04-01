@@ -15,6 +15,7 @@ class GatewayJWTAuthentication(JWTAuthentication):
             user.is_student = request.headers.get('X-User-Is-Student', 'false').lower() == 'true'
             user.is_teacher = request.headers.get('X-User-Is-Teacher', 'false').lower() == 'true'
             user.is_manager = request.headers.get('X-User-Is-Manager', 'false').lower() == 'true'
+            user.access_token = request.headers.get('Authorization', '').split(' ')[-1]
             
             return (user, None)
         
