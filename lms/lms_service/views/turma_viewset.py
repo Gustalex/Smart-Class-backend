@@ -90,3 +90,34 @@ class TurmaViewSet(ModelViewSet):
                     },
                     status=status.HTTP_207_MULTI_STATUS
                 )
+    
+    @action(detail=True, methods=['get'])
+    def get_turmas_aluno(self, request, pk=None):
+        aluno_id = int(pk) 
+        turmas = []
+
+        for turma in Turma.objects.all():
+            if aluno_id in (turma.alunos or []):
+                turmas.append(turma)
+        
+        if(turmas == []):
+            return Response(
+                {"error": "Aluno não está matriculado em nenhuma turma"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = TurmaSerializer(turmas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    @action(detail=True, methods=['get'])
+    def get_turmas_professor(self, request, pk=None):
+        professor_id = pk
+        turmas = Turma.objects.filter(professor=professor_id)
+        if not turmas.exists():
+            return Response(
+                {"error": "Professor não possui turmas cadastradas"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = TurmaSerializer(turmas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    

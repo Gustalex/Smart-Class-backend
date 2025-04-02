@@ -7,6 +7,9 @@ class AtividadeSerializer(serializers.ModelSerializer):
         model = Atividade
         fields = '__all__'
         read_only_fields = ('id',)
+        extra_kwargs = {
+            'conteudo': {'required': False},
+        }
     
     def validate_conteudo(self, arquivo):
         if arquivo:
