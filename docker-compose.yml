@@ -36,6 +36,21 @@ services:
       - my-network
     depends_on:
       - auth-service
+  
+  avaliacao-service:
+    build: ./avaliacao
+    container_name: avaliacao-service
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./avaliacao:/app
+      - avaliacao_db:/app/data
+      - ./avaliacao_service/media:/app/media:rw,z
+    networks:
+      - my-network
+    depends_on:
+      - auth-service
+      - lms-service
 
 volumes:
   auth_db:
