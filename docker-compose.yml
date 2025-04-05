@@ -55,6 +55,7 @@ services:
 volumes:
   auth_db:
   lms_db:
+  avaliacao_db:
 
 networks:
   my-network:
