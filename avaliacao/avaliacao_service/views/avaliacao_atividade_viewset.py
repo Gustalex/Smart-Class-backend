@@ -43,3 +43,26 @@ class AvaliacaoAtividadeViewSet(viewsets.ModelViewSet):
                 {'detail': str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+    
+
+    @action(detail=True, methods=['get'])
+    def get_atividades_by_id(self, request, pk=None):
+        try:
+            atividades = AvaliacaoAtividade.objects.filter(atividade = pk)
+            if not atividades.exists():
+                return Response(
+                    {'detail': 'Nenhuma atividade encontrada'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            serializer = self.get_serializer(atividades, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except AvaliacaoAtividade.DoesNotExist:
+            return Response(
+                {'detail': 'Avaliação não encontrada'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'detail': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
