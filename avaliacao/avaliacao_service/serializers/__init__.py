@@ -1,0 +1,1 @@
+from .avaliacao_atrividade_serializer import *
