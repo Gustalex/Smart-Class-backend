@@ -1,0 +1,1 @@
+AVALIACAO_SERVICE_URL = 'http://avaliacao-service:8002'
