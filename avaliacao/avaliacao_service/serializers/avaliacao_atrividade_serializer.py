@@ -10,9 +10,9 @@ class AvaliacaoAtividadeSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
         extra_kwargs = {
             'conteudo_para_avaliacao': {'required': True},
-            'nota': {'required': True},
             'aluno': {'required': True},
-            'atividade': {'required': True}
+            'atividade': {'required': True},
+            'nota': {'required': False},
         }
 
 
