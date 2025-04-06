@@ -1,11 +1,13 @@
 import os
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from ..models import AvaliacaoAtividade
 from ..serializers import AvaliacaoAtividadeSerializer
+from ..helpers import make_request_to_recomendacao
 
 class AvaliacaoAtividadeViewSet(viewsets.ModelViewSet):
     queryset = AvaliacaoAtividade.objects.all()
@@ -66,3 +68,62 @@ class AvaliacaoAtividadeViewSet(viewsets.ModelViewSet):
                 {'detail': str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+    
+    @action(detail=True, methods=['patch'])
+    def publicar_nota(self, request, pk=None):
+        try:
+            with transaction.atomic():
+                atividade_avaliacao = get_object_or_404(AvaliacaoAtividade, pk=pk)
+                nota = request.data.get('nota')
+                print(f"Nota recebida: {nota}")
+                feedback = request.data.get('feedback')
+                print(f"Feedback recebido: {feedback}")
+                
+                if nota is None:
+                    return Response(
+                        {'detail': 'Nota não informada'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                atividade_avaliacao.nota = nota
+                atividade_avaliacao.save()
+
+                request_data = {
+                    "aluno": atividade_avaliacao.aluno,
+                    "atividade": atividade_avaliacao.atividade,
+                    "feedback": feedback
+                }
+
+                if nota < 7:
+                    response = make_request_to_recomendacao(
+                        request = self.request,
+                        method = "post",
+                        endpoint = "api/recomendacao/recomendacao/",
+                        data = request_data
+                    )
+                    if response and response.status_code == 201:
+                        return Response(
+                            {'detail': 'Nota publicada e recomendação enviada'}, 
+                            status=status.HTTP_200_OK
+                        )
+                    else:
+                        return Response(
+                            {'detail': 'Falha ao enviar recomendação'}, 
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                        )
+                else:
+                    return Response(
+                        {'detail': 'Nota publicada'}, 
+                        status=status.HTTP_200_OK
+                    )
+        except AvaliacaoAtividade.DoesNotExist:
+            return Response(
+                {'detail': 'Avaliação não encontrada'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'detail': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
