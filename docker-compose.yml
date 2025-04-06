@@ -51,11 +51,27 @@ services:
     depends_on:
       - auth-service
       - lms-service
+  
+  recomendacao-service:
+    build: ./recomendacao
+    container_name: recomendacao-service
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./recomendacao:/app
+      - recomendacao_db:/app/data
+    networks:
+      - my-network
+    depends_on:
+      - auth-service
+      - lms-service
+      - avaliacao-service
 
 volumes:
   auth_db:
   lms_db:
   avaliacao_db:
+  recomendacao_db:
 
 networks:
   my-network:
