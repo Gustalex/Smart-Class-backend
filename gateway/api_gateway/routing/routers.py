@@ -1,5 +1,5 @@
 from .router import MicroserviceRouter
-from api_gateway.services import auth, lms, avaliacao
+from api_gateway.services import auth, lms, avaliacao, recomendacao
 
 class AuthRouter(MicroserviceRouter):
     service_url = auth.AUTH_SERVICE_URL
@@ -14,3 +14,8 @@ class LMSRouter(MicroserviceRouter):
 class AvaliacaoRouter(MicroserviceRouter):
     service_url = avaliacao.AVALIACAO_SERVICE_URL
     service_prefix = 'api/avaliacao'
+
+
+class RecomendacaoRouter(MicroserviceRouter):
+    service_url = recomendacao.RECOMENDACAO_SERVICE_URL
+    service_prefix = 'api/recomendacao'

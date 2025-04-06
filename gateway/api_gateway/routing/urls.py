@@ -1,5 +1,5 @@
 from django.urls import path
-from .routers import AuthRouter, LMSRouter, AvaliacaoRouter
+from .routers import AuthRouter, LMSRouter, AvaliacaoRouter, RecomendacaoRouter
 
 urlpatterns = [
     # Auth microservice routes
@@ -11,4 +11,7 @@ urlpatterns = [
     # Avaliacao microservice routes
     path('avaliacao/', AvaliacaoRouter.as_view(), name='avaliacao-root'),
     path('avaliacao/<path:path>', AvaliacaoRouter.as_view(), name='avaliacao-proxy'),
+    # Recomendacao microservice routes
+    path('recomendacao/', RecomendacaoRouter.as_view(), name='recomendacao-root'),
+    path('recomendacao/<path:path>', RecomendacaoRouter.as_view(), name='recomendacao-proxy'),
 ]

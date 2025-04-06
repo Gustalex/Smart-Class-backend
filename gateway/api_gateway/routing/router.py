@@ -31,7 +31,7 @@ class MicroserviceRouter(APIView):
     def _proxy_request(self, request, path=''):
         user_info = None 
         
-        if not path.startswith(('login/', 'register/', 'auth/')):
+        if not path.startswith(('login/', 'register/', 'auth/', 'refresh/')):
             auth_response = self._verify_token(request)
             if not auth_response:
                 return Response(
