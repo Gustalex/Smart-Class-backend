@@ -3,6 +3,9 @@ from rest_framework.exceptions import AuthenticationFailed
 
 class GatewayJWTAuthentication(JWTAuthentication):
     def authenticate(self, request):
+        if request.method == 'GET' and request.path.endswith('/cursos/'):
+            return None
+            
         if 'X-Forwarded-From-Gateway' in request.headers:
             user_id = request.headers.get('X-User-ID')
             if not user_id:

@@ -31,7 +31,17 @@ class MicroserviceRouter(APIView):
     def _proxy_request(self, request, path=''):
         user_info = None 
         
-        if not path.startswith(('login/', 'register/', 'auth/', 'refresh/')):
+        unauthenticated_paths = [
+            'cursos/', 
+            'login/',
+            'register/',
+            'auth/',
+            'refresh/'
+        ]
+        
+        requires_auth = not any(path.startswith(p) for p in unauthenticated_paths)
+        
+        if requires_auth:
             auth_response = self._verify_token(request)
             if not auth_response:
                 return Response(
@@ -48,12 +58,12 @@ class MicroserviceRouter(APIView):
             
             headers = {
                 'Content-Type': request.headers.get('Content-Type', 'application/json'),
-                'X-Forwarded-From-Gateway': 'true',
                 'Authorization': request.headers.get('Authorization', '')
             }
             
             if user_info:
                 headers.update({
+                    'X-Forwarded-From-Gateway': 'true',
                     'X-User-ID': str(user_info.get('user_id', '')),
                     'X-User-Email': user_info.get('email', ''),
                     'X-User-Is-Student': 'true' if user_info.get('is_student') else 'false',
