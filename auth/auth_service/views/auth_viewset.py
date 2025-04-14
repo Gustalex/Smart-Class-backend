@@ -47,10 +47,13 @@ class LoginView(generics.GenericAPIView):
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             user = serializer.validated_data['user']
+            role = self._verify_user_role(user)
             refresh = RefreshToken.for_user(user)
             return Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
+                'user_id': user.id,
+                'user_role': role,
             }, status=status.HTTP_200_OK)
 
         except KeyError as e:
@@ -61,7 +64,15 @@ class LoginView(generics.GenericAPIView):
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             return Response({'error': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-       
+    
+    def _verify_user_role(self, user):
+        if user.is_student:
+            return 'student'
+        elif user.is_teacher:
+            return 'teacher'
+        elif user.is_manager:
+            return 'manager'
+        return None
 
 class LogoutView(generics.GenericAPIView):
 
