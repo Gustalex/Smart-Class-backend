@@ -59,7 +59,7 @@ class LoginView(generics.GenericAPIView):
         except KeyError as e:
             return Response({'error': f'Missing required field: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError as e:
-            return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': e.detail}, status=status.HTTP_403_FORBIDDEN)
         except AuthenticationFailed as e:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
@@ -90,6 +90,8 @@ class LogoutView(generics.GenericAPIView):
 
 
 class RefreshView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+
     def post(self, request):
         try:
             refresh_token = request.data["refresh"]

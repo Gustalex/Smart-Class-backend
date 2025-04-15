@@ -8,7 +8,7 @@ class CursoViewSet(ModelViewSet):
     serializer_class = CursoSerializer
     
     def get_permissions(self):
-        if self.action == 'list':
+        if self.action in ['list', 'retrieve']:
             permission_classes = [AllowAny]
         else:
             permission_classes = [IsAuthenticated]

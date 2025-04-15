@@ -32,14 +32,14 @@ class MicroserviceRouter(APIView):
         user_info = None 
         
         unauthenticated_paths = [
-            'cursos/', 
-            'login/',
-            'register/',
-            'auth/',
-            'refresh/'
+            'cursos', 
+            'login',
+            'register',
+            'auth',
+            'refresh'
         ]
         
-        requires_auth = not any(path.startswith(p) for p in unauthenticated_paths)
+        requires_auth = not any(p in path for p in unauthenticated_paths)
         
         if requires_auth:
             auth_response = self._verify_token(request)
@@ -49,6 +49,11 @@ class MicroserviceRouter(APIView):
                     status=status.HTTP_401_UNAUTHORIZED
                 )
             user_info = auth_response.json()
+        else:
+            headers = {
+                'Content-Type': request.headers.get('Content-Type', 'application/json'),
+                'X-Forwarded-From-Gateway': 'true'
+            }
 
         try:
             base_url = self.service_url.rstrip('/')
@@ -58,12 +63,12 @@ class MicroserviceRouter(APIView):
             
             headers = {
                 'Content-Type': request.headers.get('Content-Type', 'application/json'),
-                'Authorization': request.headers.get('Authorization', '')
+                'X-Forwarded-From-Gateway': 'true'  
             }
             
             if user_info:
                 headers.update({
-                    'X-Forwarded-From-Gateway': 'true',
+                    'Authorization': request.headers.get('Authorization', ''),
                     'X-User-ID': str(user_info.get('user_id', '')),
                     'X-User-Email': user_info.get('email', ''),
                     'X-User-Is-Student': 'true' if user_info.get('is_student') else 'false',

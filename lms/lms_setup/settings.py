@@ -76,6 +76,9 @@ REST_FRAMEWORK = {
         'lms_service.authentication.GatewayJWTAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ),
 }
 
 ROOT_URLCONF = 'lms_setup.urls'
