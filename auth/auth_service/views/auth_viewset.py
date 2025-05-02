@@ -54,6 +54,7 @@ class LoginView(generics.GenericAPIView):
                 'access': str(refresh.access_token),
                 'user_id': user.id,
                 'user_role': role,
+                'user_name': user.name,
             }, status=status.HTTP_200_OK)
 
         except KeyError as e:
