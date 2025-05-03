@@ -32,14 +32,23 @@ class MicroserviceRouter(APIView):
         user_info = None 
         
         unauthenticated_paths = [
-            'cursos', 
+            ('cursos', 'GET'),
             'login',
             'register',
             'auth',
             'refresh'
         ]
         
-        requires_auth = not any(p in path for p in unauthenticated_paths)
+        requires_auth = True
+        for item in unauthenticated_paths:
+            if isinstance(item, tuple):
+                if item[0] in path and item[1] == request.method:
+                    requires_auth = False
+                    break
+            else:
+                if item in path:
+                    requires_auth = False
+                    break
         
         if requires_auth:
             auth_response = self._verify_token(request)
@@ -48,13 +57,15 @@ class MicroserviceRouter(APIView):
                     {'detail': 'Token inválido ou serviço indisponível'},
                     status=status.HTTP_401_UNAUTHORIZED
                 )
+            print(f"Auth response: {auth_response}")
             user_info = auth_response.json()
         else:
             headers = {
                 'Content-Type': request.headers.get('Content-Type', 'application/json'),
                 'X-Forwarded-From-Gateway': 'true'
             }
-
+            print(f"Headers: {headers}")
+        
         try:
             base_url = self.service_url.rstrip('/')
             prefix = self.service_prefix.strip('/')
@@ -65,6 +76,8 @@ class MicroserviceRouter(APIView):
                 'Content-Type': request.headers.get('Content-Type', 'application/json'),
                 'X-Forwarded-From-Gateway': 'true'  
             }
+
+            print(f"Headers 2: {headers}")
             
             if user_info:
                 headers.update({
@@ -75,6 +88,9 @@ class MicroserviceRouter(APIView):
                     'X-User-Is-Teacher': 'true' if user_info.get('is_teacher') else 'false',
                     'X-User-Is-Manager': 'true' if user_info.get('is_manager') else 'false',
                 })
+            
+
+            print(f"Headers 3: {headers}")
 
             print(f"Proxying to: {full_url}")
 

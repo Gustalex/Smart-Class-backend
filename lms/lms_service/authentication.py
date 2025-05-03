@@ -1,5 +1,19 @@
+from django.contrib.auth.models import AnonymousUser
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import AuthenticationFailed
+
+class AuthenticatedAnonymousUser(AnonymousUser):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._is_authenticated = False
+
+    @property
+    def is_authenticated(self):
+        return self._is_authenticated
+
+    @is_authenticated.setter
+    def is_authenticated(self, value):
+        self._is_authenticated = value
 
 class GatewayJWTAuthentication(JWTAuthentication):
     def authenticate(self, request):
@@ -7,21 +21,17 @@ class GatewayJWTAuthentication(JWTAuthentication):
             return None
             
         if 'X-Forwarded-From-Gateway' in request.headers:
-            if not request.headers.get('X-User-ID'):
-                return None
-                
             user_id = request.headers.get('X-User-ID')
             if not user_id:
-                raise AuthenticationFailed('User not found', code='user_not_found')
+                raise AuthenticationFailed('User ID não encontrado nos headers', code='missing_user_id')
             
-            from django.contrib.auth.models import AnonymousUser
-            user = AnonymousUser()
+            user = AuthenticatedAnonymousUser()
             user.id = int(user_id)
             user.email = request.headers.get('X-User-Email', '')
+            user.is_authenticated = True 
             user.is_student = request.headers.get('X-User-Is-Student', 'false').lower() == 'true'
             user.is_teacher = request.headers.get('X-User-Is-Teacher', 'false').lower() == 'true'
             user.is_manager = request.headers.get('X-User-Is-Manager', 'false').lower() == 'true'
-            user.access_token = request.headers.get('Authorization', '').split(' ')[-1]
             
             return (user, None)
         
