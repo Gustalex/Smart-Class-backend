@@ -29,6 +29,11 @@ class MicroserviceRouter(APIView):
             return None
 
     def _proxy_request(self, request, path=''):
+        """
+        Faz o proxy da requisição para o micro serviço correspondente com os headers apropriados.
+        É importante tambeém para tratar os casos de requisições não autenticadas.
+        Recebe como parâmetro o request e o path que será utilizado para fazer a requisição ao micro serviço.
+        """
         user_info = None 
         
         unauthenticated_paths = [
