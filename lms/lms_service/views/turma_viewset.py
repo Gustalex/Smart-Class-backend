@@ -3,8 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
-from ..serializers import TurmaSerializer
-from ..models import Turma
+from django.shortcuts import get_object_or_404
+from ..serializers import TurmaSerializer, AtividadeSerializer
+from ..models import Turma, Atividade
 from ..helpers import make_request_to_auth
 
 
@@ -120,4 +121,44 @@ class TurmaViewSet(ModelViewSet):
             )
         serializer = TurmaSerializer(turmas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    @action(detail=True, methods=['get'])
+    def get_atividades_turma(self, request, pk=None):
+        try:
+            turma = get_object_or_404(Turma, pk=pk)
+            aulas = turma.aulas.all()
+            atividades = Atividade.objects.filter(aula__in=aulas).distinct()
+            serializer = AtividadeSerializer(atividades, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Turma.DoesNotExist:
+            return Response(
+                {"error": "Turma não encontrada"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+
+    @action(detail=True, methods=['get'])
+    def get_turmas_professor(self, request, pk=None):
+        try:
+            professor_id=pk
+            turmas = Turma.objects.filter(professor=professor_id)
+            if not turmas.exists():
+                return Response(
+                    {"error": "Professor não possui turmas cadastradas"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            serializer = TurmaSerializer(turmas, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
     

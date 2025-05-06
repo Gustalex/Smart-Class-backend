@@ -4,7 +4,6 @@ from .factory_model import FactoryModel
 class Turma(FactoryModel):
     nome = models.CharField(max_length=255, unique=True)
     curso = models.ForeignKey('Curso', related_name='turmas', on_delete=models.CASCADE)
-    materia = models.CharField(max_length=255)
     professor = models.IntegerField()
     alunos = models.JSONField()
 

@@ -15,12 +15,11 @@ class TurmaSerializer(serializers.ModelSerializer):
         model = Turma
         fields = [
             'id', 'nome', 'curso_id', 'curso', 
-            'materia', 'professor', 'alunos'
+            'professor', 'alunos'
         ]
         read_only_fields = ('id',)
         extra_kwargs = {
             'nome': {'required': True, 'allow_blank': False},
-            'materia': {'required': True, 'allow_blank': False},
             'professor': {'required': True},
             'alunos': {'required': False, 'allow_null': True},
         }
