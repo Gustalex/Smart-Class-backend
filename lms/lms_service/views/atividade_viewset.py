@@ -6,6 +6,7 @@ from ..serializers import AtividadeSerializer
 import os
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
+from django.db import models
 
 
 class AtividadeViewSet(viewsets.ModelViewSet):
